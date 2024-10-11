@@ -2,6 +2,8 @@ import pygame
 import random
 import sys
 
+from pygame.examples.cursors import image
+
 # Initialisation de Pygame
 pygame.init()
 
@@ -20,38 +22,40 @@ GRIS = (128, 128, 128)
 
 # Classe VoitureJoueur
 class VoitureJoueur:
-    def __init__(self, x, y):
-        self.largeur = 50
-        self.hauteur = 100
-        self.x = x
-        self.y = y
-        self.vitesse = 5
-        self.rect = pygame.Rect(self.x, self.y, self.largeur, self.hauteur)
+     def __init__(self, x, y):
+         self.largeur = 50
+         self.hauteur = 100
+         self.image = pygame.image.load("images/dodge.png")  # Charge l'image
+         self.image_transform = pygame.transform.scale(self.image, (160, 200))
+         self.x = x
+         self.y = y
+         self.rect = pygame.Rect(self.x, self.y, self.largeur, self.hauteur)
+         self.vitesse = 5
 
-    def deplacer(self, direction):
-        self.x += direction * self.vitesse
-        self.rect.x = self.x
 
-    def dessiner(self, fenetre):
-        pygame.draw.rect(fenetre, ROUGE, self.rect)
+     def deplacer(self, direction):
+         self.x += direction * self.vitesse
+         self.rect.x = self.x
+
+     def dessiner(self, fenetre):
+         fenetre.blit(self.image_transform, (self.x, self.y))  # Dessine l'image au lieu du rectangle
 
 # Classe VoitureEnnemi
 class VoitureEnnemi:
     def __init__(self, x, y, vitesse):
         self.largeur = 50
         self.hauteur = 100
-        self.image = pygame.image('images\dodge_srt.png')
         self.x = x
         self.y = y
         self.vitesse = vitesse
-        self.rect = pygame.image.rect()
+        self.rect = pygame.Rect(self.x, self.y, self.largeur, self.hauteur)
 
     def deplacer(self):
         self.y += self.vitesse
         self.rect.y = self.y
 
     def dessiner(self, fenetre):
-        pygame.draw.image(fenetre, ROUGE, self.rect)
+        pygame.draw.rect(fenetre, ROUGE, self.rect)
 
 # Fonction pour afficher du texte
 def afficher_textes(message, taille, couleur, x, y):
@@ -210,6 +214,7 @@ def main():
     while True:
         menu_principal()
         lancer_jeu()
+        pygame.draw(VoitureJoueur.rect)
 
 if __name__ == "__main__":
     main()
