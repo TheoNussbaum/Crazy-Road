@@ -18,32 +18,46 @@ ROUGE = (255, 0, 0)
 VERT = (0, 255, 0)
 GRIS = (128, 128, 128)
 
-
-# Classe Voiture
-class Voiture:
-    def __init__(self, x, y, vitesse, direction):
+# Classe VoitureJoueur
+class VoitureJoueur:
+    def __init__(self, x, y):
         self.largeur = 50
         self.hauteur = 100
         self.x = x
         self.y = y
-        self.vitesse = vitesse
-        self.direction = direction  # 1 pour descendre, -1 pour monter
+        self.vitesse = 5
         self.rect = pygame.Rect(self.x, self.y, self.largeur, self.hauteur)
 
-    def deplacer(self):
-        self.y += self.vitesse * self.direction
-        self.rect.y = self.y
+    def deplacer(self, direction):
+        self.x += direction * self.vitesse
+        self.rect.x = self.x
 
     def dessiner(self, fenetre):
         pygame.draw.rect(fenetre, ROUGE, self.rect)
 
+# Classe VoitureEnnemi
+class VoitureEnnemi:
+    def __init__(self, x, y, vitesse):
+        self.largeur = 50
+        self.hauteur = 100
+        self.image = pygame.image('images\dodge_srt.png')
+        self.x = x
+        self.y = y
+        self.vitesse = vitesse
+        self.rect = pygame.image.rect()
+
+    def deplacer(self):
+        self.y += self.vitesse
+        self.rect.y = self.y
+
+    def dessiner(self, fenetre):
+        pygame.draw.image(fenetre, ROUGE, self.rect)
 
 # Fonction pour afficher du texte
 def afficher_textes(message, taille, couleur, x, y):
     police = pygame.font.SysFont(None, taille)
     texte = police.render(message, True, couleur)
     fenetre.blit(texte, (x, y))
-
 
 # Fonction pour afficher un bouton
 def afficher_bouton(message, taille, couleur, x, y, largeur, hauteur, survol=False):
@@ -56,7 +70,6 @@ def afficher_bouton(message, taille, couleur, x, y, largeur, hauteur, survol=Fal
         pygame.draw.rect(fenetre, BLANC, rect_bouton)
     fenetre.blit(texte, (x + (largeur - texte.get_width()) // 2, y + (hauteur - texte.get_height()) // 2))
     return rect_bouton
-
 
 # Fonction du menu principal
 def menu_principal():
@@ -105,16 +118,13 @@ def menu_principal():
 
         pygame.display.flip()
 
-
 # Fonction principale du jeu
 def lancer_jeu():
     clock = pygame.time.Clock()
     FPS = 60
 
     # Position de la voiture du joueur
-    voiture_joueur_x = largeur_fenetre // 2 - 25
-    voiture_joueur_y = hauteur_fenetre - 150
-    voiture_joueur = Voiture(voiture_joueur_x, voiture_joueur_y, 0, 0)
+    voiture_joueur = VoitureJoueur(largeur_fenetre // 2 - 25, hauteur_fenetre - 150)
 
     # Liste des voitures ennemies
     voitures_ennemies = []
@@ -134,40 +144,25 @@ def lancer_jeu():
             # Gestion des touches
             touches = pygame.key.get_pressed()
             if touches[pygame.K_LEFT] and voiture_joueur.x > 0:
-                voiture_joueur.x -= 5
+                voiture_joueur.deplacer(-1)
             if touches[pygame.K_RIGHT] and voiture_joueur.x < largeur_fenetre - voiture_joueur.largeur:
-                voiture_joueur.x += 5
-            if touches[pygame.K_UP] and voiture_joueur.y > 0:
-                voiture_joueur.y -= 5
-            if touches[pygame.K_DOWN] and voiture_joueur.y < hauteur_fenetre - voiture_joueur.hauteur:
-                voiture_joueur.y += 5
-            voiture_joueur.rect.x = voiture_joueur.x
-            voiture_joueur.rect.y = voiture_joueur.y
+                voiture_joueur.deplacer(1)
 
             # Apparition des voitures ennemies
             compteur_apparition += 1
             if compteur_apparition >= fréquence_apparition:
                 compteur_apparition = 0
-                # Décider aléatoirement de la direction
-                direction = random.choice([1, -1])
-                if direction == 1:
-                    x = random.randint(0, largeur_fenetre - 50)
-                    y = -100
-                else:
-                    x = random.randint(0, largeur_fenetre - 50)
-                    y = hauteur_fenetre
+                x = random.randint(0, largeur_fenetre - 50)
+                y = -100
                 vitesse = random.randint(3, 7)
-                voiture = Voiture(x, y, vitesse, direction)
+                voiture = VoitureEnnemi(x, y, vitesse)
                 voitures_ennemies.append(voiture)
 
             # Déplacer les voitures ennemies
             for voiture in voitures_ennemies[:]:
                 voiture.deplacer()
                 # Supprimer les voitures qui sortent de l'écran
-                if voiture.direction == 1 and voiture.y > hauteur_fenetre:
-                    voitures_ennemies.remove(voiture)
-                    score += 1
-                elif voiture.direction == -1 and voiture.y < -voiture.hauteur:
+                if voiture.y > hauteur_fenetre:
                     voitures_ennemies.remove(voiture)
                     score += 1
                 # Vérifier les collisions
@@ -210,13 +205,11 @@ def lancer_jeu():
         pygame.display.flip()
         clock.tick(FPS)
 
-
 # Fonction principale
 def main():
     while True:
         menu_principal()
         lancer_jeu()
-
 
 if __name__ == "__main__":
     main()
